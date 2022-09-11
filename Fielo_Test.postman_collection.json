@@ -1,0 +1,1199 @@
+{
+	"info": {
+		"_postman_id": "e70d0254-221a-4e8c-bd1e-54d20977ba70",
+		"name": "Fielo_Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5946429"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Criei uma variavel para armazenar o conteúdo do response para validação posterior\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Verifico que está ok, se o response tem um corpo e se é um Json\r",
+							"pm.test(\"Dado que quero realizar uma autenticação\", function (){\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Verifico se a API retornou o status 200 e o status OK para prosseguir com a validação\r",
+							"pm.test(\"Quando informo um APP-ID válido para autenticação\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(\"OK\");\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Verifico que foi retornado no resultado o valor verdadeiro, pois se não houver a autenticação com sucesso as demais api vão falhar\r",
+							"pm.test(\"Então possuo um token válido para acessar o jogo\", function (){\r",
+							"    pm.expect(response_body.auth).to.eql(true);\r",
+							"    \r",
+							"});\r",
+							"\r",
+							"//O Token foi armazenado em variavel global para ser utilizado dinamicamente em todas as chamadas posteriores a autenticação\r",
+							"pm.globals.set(\"TOKEN_JWT\", response_body.token);\r",
+							"\r",
+							"\r",
+							"//***********************************************/\r",
+							"//Cenários Extras:\r",
+							"//***********************************************/\r",
+							"\r",
+							"//Dado que informo um APP-ID inválido\r",
+							"//Quando executo a chamada da API\r",
+							"//Então a autenticação não é autorizada\r",
+							"\r",
+							"//Dado que não informo nenhum APP-ID\r",
+							"//Quando executo a chamada da API\r",
+							"//Então a autenticação não é autorizada"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-app-id",
+						"value": "{{APP_ID}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/auth",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Criar Novo Heroi",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//No Body coloquei o nome do novo heroi como randomico para não se repetir durante a execução\r",
+							"\r",
+							"//Foi criada essa função para deixar randomico o preenchimento das habilidades do novo heroi\r",
+							"function randomIntFromInterval(min, max) { // min and max included \r",
+							"  return Math.floor(Math.random() * (max - min + 1) + min)\r",
+							"}\r",
+							"\r",
+							"//Foi criada uma variavel para o Power receber randomicamente os valores entre 150 a 200\r",
+							"pm.environment.set(\"intPower\", randomIntFromInterval(150, 200))\r",
+							"//Foi criada uma variavel para o Velocity receber randomicamente os valores entre 100 a 150\r",
+							"pm.environment.set(\"intVelocity\", randomIntFromInterval(100, 150))\r",
+							"//Foi criada uma variavel para o combat receber randomicamente os valores entre 0 a 100\r",
+							"pm.environment.set(\"intCombat\", randomIntFromInterval(0, 100))\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Criei uma variavel para armazenar o conteúdo do response para validação posterior\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Verifico que está ok, se o response tem um corpo e se é um Json\r",
+							"pm.test(\"Dado que faço a requisição para cadastrar novo heroi\", function (){\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Verifico se algum campo foi gravada a informação null, caso tenha algum campo null vai dar erro\r",
+							"pm.test(\"Quando preencho os campos com dados válidos\", function (){\r",
+							"    pm.expect(response_body.name).not.eq(null);\r",
+							"    pm.expect(response_body.skills.power).not.eq(null);\r",
+							"    pm.expect(response_body.skills.velocity).not.eq(null);\r",
+							"    pm.expect(response_body.skills.combat).not.eq(null);\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Verifico se a API retornou o status 200 e o status OK e se o id criado não está nulo\r",
+							"pm.test(\"Então realizo a criação de um novo Heroi\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(\"OK\");\r",
+							"    pm.expect(response_body.id).not.eq(null);\r",
+							"});\r",
+							"\r",
+							"//As informações como id, nome do novo heroi e o poder do novo heroi foram armazenadas em variavel global para comparar com os outros herois já cadastrados.\r",
+							"pm.globals.set(\"ID_HERO\", response_body.id);\r",
+							"pm.globals.set(\"NAME_HERO\", response_body.name);\r",
+							"pm.globals.set(\"POWER_HERO\", response_body.skills.power);\r",
+							"\r",
+							"\r",
+							"//***********************************************/\r",
+							"//Cenários Extras:\r",
+							"//***********************************************/\r",
+							"\r",
+							"//Dado que realizo a requisição de cadastro do novo heroi\r",
+							"//Quando não preencho o nome do heroi\r",
+							"//Então não permite o cadastro do novo heroi\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição de cadastro do novo heroi\r",
+							"//Quando não preencho nenhuma habilidade do heroi\r",
+							"//Então não permite o cadastro do novo heroi\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição de cadastro do novo heroi\r",
+							"//Quando preencho  todas as habilidade do heroi com valores superior a 200\r",
+							"//Então permite o cadastro do novo heroi, porém as habilidades ficam gravadas com o valor 200\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição de cadastro do novo heroi\r",
+							"//Quando preencho  todas as habilidade do heroi com valores negativo (-10)\r",
+							"//Então permite o cadastro do novo heroi, porém as habilidades ficam gravadas com o valor 0\r",
+							"\r",
+							"\r",
+							"//********************************* */\r",
+							"// Problemas encontrados\r",
+							"//********************************* */\r",
+							"\r",
+							"// 1-) Na documentação da API o campo \"Combate\" está escrito errado, foi necessário alterar o valor para \"Combat\" para realizar um novo cadastro de heroi\r",
+							"// 2-) Ao preencher os campos de habilidades com valores negativo (inferior a 0), está permitindo o cadastro.\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-access-token",
+						"value": "{{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"name\": \"{{$randomFirstName}}\",\r\n        \"skills\": {\r\n        \"power\": {{intPower}},\r\n        \"velocity\": {{intVelocity}},\r\n        \"combat\": {{intCombat}}\r\n        }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/heroes",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"heroes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar Heroi",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Criei uma variavel para armazenar o conteúdo do response para validação posterior\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Verifico que está ok, se o response tem um corpo e se é um Json\r",
+							"pm.test(\"Dado que faço a requisição para consultar herois\", function (){\r",
+							"    pm.response.to.be.ok; \r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"\r",
+							"//Verifico se a API retornou o status 200 e o status OK para prosseguir com a validação\r",
+							"pm.test(\"Quando realizo a consulta do novo heroi cadastrado\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(\"OK\");\r",
+							"    \r",
+							"});\r",
+							"\r",
+							"//Verifico se retornou o nome do novo heroi cadastrado anteriormente nessa chamada de consulta\r",
+							"pm.test(\"Então verifico que o novo heroi foi cadastrado \", function (){\r",
+							"    pm.expect(response_body.find(item => item.name == pm.globals.get(\"NAME_HERO\")));\r",
+							"    \r",
+							"});\r",
+							"\r",
+							"//Como o teste não tem critério de quais dados serão utilizados para comparar quem vence ou perde eu acabei escolhendo a habilidade Power como critério de comparação\r",
+							"//Neste caso, verifico qual heroi já cadastrado possui o Power maior que o novo Heroi\r",
+							"//E armazeno em variavel global o id e o nome do heroi com o Power superior ao Novo Heroi\r",
+							"pm.test(\"Então comparo o Power entre os herois retornados e salvo o resultado\", function (){\r",
+							"    const person = response_body.find(item => item.skills.power > pm.globals.get(\"POWER_HERO\"));\r",
+							"    pm.globals.set(\"HERO_ID\", person.id);\r",
+							"    pm.globals.set(\"HERO_NAME\", person.name);    \r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-access-token",
+						"value": "{{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/heroes",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"heroes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Batalha Perdedora",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//Um dos problemas encontrados é que se colocar duas variaveis iguais recebendo o mesmo ID para consulta, é retornado a mensagem \"Change the hero\"\r",
+							"//Por isso criei essas duas variaveis diferentes, pois uma vai receber o id do novo heroi e a outra o id do heroi que venceu no caso\r",
+							"pm.environment.set(\"HERO_ID1\", pm.globals.get(\"HERO_ID\"))\r",
+							"pm.environment.set(\"HERO_ID\", pm.globals.get(\"ID_HERO\"))\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Criei uma variavel para armazenar o conteúdo do response para validação posterior\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Verifico que está ok, se o response tem um corpo e se é um Json\r",
+							"pm.test(\"Dado que faço a requisição para a batalha\", function (){\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"\r",
+							"//Verifico se a API retornou o status 200 e o status OK para prosseguir com a validação\r",
+							"pm.test(\"Quando verifico qual o poder é maior entre o novo heroi e qualquer heroi\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(\"OK\");\r",
+							"});\r",
+							"\r",
+							"//Verifico o resultado retornado com as variaveis globais para realmente saber se está correto esse retorno\r",
+							"pm.test(\"Então verifico o ganhador é outro heroi e o perdedor é o novo heroi da batalha\", function (){\r",
+							"    pm.expect(response_body.winner == pm.globals.get(\"HERO_NAME\"));\r",
+							"    pm.expect(response_body.loser == pm.globals.get(\"NAME_HERO\"));\r",
+							"\r",
+							"});\r",
+							"\r",
+							"\r",
+							"//***********************************************/\r",
+							"//Cenários Extras:\r",
+							"//***********************************************/\r",
+							"\r",
+							"//Dado que realizo a requisição da batalha dos herois\r",
+							"//Quando não preencho o ID do heroi\r",
+							"//Então exibe uma mensagem informando que o campo está vazio\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição da batalha dos herois\r",
+							"//Quando não preencho o ID do machine heroi\r",
+							"//Então exibe uma mensagem informando que o campo está vazio\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição da batalha dos herois\r",
+							"//Quando preencho o mesmo ID para o Hero e o machine hero\r",
+							"//Então exibe uma mensagem informando para mudar o heroi\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-access-token",
+						"value": "{{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"hero_id\": \"{{HERO_ID1}}\",\r\n    \"machine_hero_id\": \"{{HERO_ID}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/heroes/battle",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"heroes",
+						"battle"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Auth",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Criei uma variavel para armazenar o conteúdo do response para validação posterior\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Verifico que está ok, se o response tem um corpo e se é um Json\r",
+							"pm.test(\"Dado que quero realizar uma autenticação\", function (){\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Verifico se a API retornou o status 200 e o status OK para prosseguir com a validação\r",
+							"pm.test(\"Quando informo um APP-ID válido para autenticação\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(\"OK\");\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Verifico que foi retornado no resultado o valor verdadeiro, pois se não houver a autenticação com sucesso as demais api vão falhar\r",
+							"pm.test(\"Então possuo um token válido para acessar o jogo\", function (){\r",
+							"    pm.expect(response_body.auth).to.eql(true);\r",
+							"    \r",
+							"});\r",
+							"\r",
+							"//O Token foi armazenado em variavel global para ser utilizado dinamicamente em todas as chamadas posteriores a autenticação\r",
+							"pm.globals.set(\"TOKEN_JWT\", response_body.token);\r",
+							"\r",
+							"\r",
+							"//***********************************************/\r",
+							"//Cenários Extras:\r",
+							"//***********************************************/\r",
+							"\r",
+							"//Dado que informo um APP-ID inválido\r",
+							"//Quando executo a chamada da API\r",
+							"//Então a autenticação não é autorizada\r",
+							"\r",
+							"\r",
+							"//Dado que não informo nenhum APP-ID\r",
+							"//Quando executo a chamada da API\r",
+							"//Então a autenticação não é autorizada"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-app-id",
+						"value": "{{APP_ID}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/auth",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Criar Novo Heroi",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//No Body coloquei o nome do novo heroi como randomico para não se repetir durante a execução\r",
+							"\r",
+							"//Foi criada essa função para deixar randomico o preenchimento das habilidades do novo heroi\r",
+							"function randomIntFromInterval(min, max) { // min and max included \r",
+							"  return Math.floor(Math.random() * (max - min + 1) + min)\r",
+							"}\r",
+							"\r",
+							"//Foi criada uma variavel para o Power receber randomicamente os valores entre 150 a 200\r",
+							"pm.environment.set(\"intPower\", randomIntFromInterval(150, 200))\r",
+							"//Foi criada uma variavel para o Velocity receber randomicamente os valores entre 100 a 150\r",
+							"pm.environment.set(\"intVelocity\", randomIntFromInterval(100, 150))\r",
+							"//Foi criada uma variavel para o combat receber randomicamente os valores entre 0 a 100\r",
+							"pm.environment.set(\"intCombat\", randomIntFromInterval(0, 100))\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Criei uma variavel para armazenar o conteúdo do response para validação posterior\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Verifico que está ok, se o response tem um corpo e se é um Json\r",
+							"pm.test(\"Dado que faço a requisição para cadastrar novo heroi\", function (){\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Verifico se algum campo foi gravada a informação null, caso tenha algum campo null vai dar erro\r",
+							"pm.test(\"Quando preencho os campos com dados válidos\", function (){\r",
+							"    pm.expect(response_body.name).not.eq(null);\r",
+							"    pm.expect(response_body.skills.power).not.eq(null);\r",
+							"    pm.expect(response_body.skills.velocity).not.eq(null);\r",
+							"    pm.expect(response_body.skills.combat).not.eq(null);\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Verifico se a API retornou o status 200 e o status OK e se o id criado não está nulo\r",
+							"pm.test(\"Então realizo a criação de um novo Heroi\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(\"OK\");\r",
+							"    pm.expect(response_body.id).not.eq(null);\r",
+							"});\r",
+							"\r",
+							"//As informações como id, nome do novo heroi e o poder do novo heroi foram armazenadas em variavel global para comparar com os outros herois já cadastrados.\r",
+							"pm.globals.set(\"ID_HERO\", response_body.id);\r",
+							"pm.globals.set(\"NAME_HERO\", response_body.name);\r",
+							"pm.globals.set(\"POWER_HERO\", response_body.skills.power);\r",
+							"\r",
+							"\r",
+							"//***********************************************/\r",
+							"//Cenários Extras:\r",
+							"//***********************************************/\r",
+							"\r",
+							"//Dado que realizo a requisição de cadastro do novo heroi\r",
+							"//Quando não preencho o nome do heroi\r",
+							"//Então não permite o cadastro do novo heroi\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição de cadastro do novo heroi\r",
+							"//Quando não preencho nenhuma habilidade do heroi\r",
+							"//Então não permite o cadastro do novo heroi\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição de cadastro do novo heroi\r",
+							"//Quando preencho  todas as habilidade do heroi com valores superior a 200\r",
+							"//Então permite o cadastro do novo heroi, porém as habilidades ficam gravadas com o valor 200\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição de cadastro do novo heroi\r",
+							"//Quando preencho  todas as habilidade do heroi com valores negativo (-10)\r",
+							"//Então permite o cadastro do novo heroi, porém as habilidades ficam gravadas com o valor 0\r",
+							"\r",
+							"\r",
+							"//********************************* */\r",
+							"// Problemas encontrados\r",
+							"//********************************* */\r",
+							"\r",
+							"// 1-) Na documentação da API o campo \"Combate\" está escrito errado, foi necessário alterar o valor para \"Combat\" para realizar um novo cadastro de heroi\r",
+							"// 2-) Ao preencher os campos de habilidades com valores negativo (inferior a 0), está permitindo o cadastro.\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-access-token",
+						"value": "{{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"name\": \"{{$randomFirstName}}\",\r\n   \"skills\": {\r\n            \"power\": {{intPower}},\r\n            \"velocity\": {{intVelocity}},\r\n            \"combat\": {{intCombat}}\r\n        }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/heroes",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"heroes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar Heroi",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Criei uma variavel para armazenar o conteúdo do response para validação posterior\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Verifico que está ok, se o response tem um corpo e se é um Json\r",
+							"pm.test(\"Dado que faço a requisição para consultar herois\", function (){\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"\r",
+							"//Verifico se a API retornou o status 200 e o status OK para prosseguir com a validação\r",
+							"pm.test(\"Quando realizo a consulta do novo heroi cadastrado\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(\"OK\");\r",
+							"    \r",
+							"});\r",
+							"\r",
+							"//Verifico se retornou o nome do novo heroi cadastrado anteriormente nessa chamada de consulta\r",
+							"pm.test(\"Então verifico que o novo heroi foi cadastrado \", function (){\r",
+							"    pm.expect(response_body.find(item => item.name == pm.globals.get(\"NAME_HERO\")));\r",
+							"    \r",
+							"});\r",
+							"\r",
+							"//Como o teste não tem critério de quais dados serão utilizados para comparar quem vence ou perde eu acabei escolhendo a habilidade Power como critério de comparação\r",
+							"//Neste caso, verifico qual heroi já cadastrado possui o Power maior que o novo Heroi\r",
+							"//E armazeno em variavel global o id e o nome do heroi com o Power superior ao Novo Heroi\r",
+							"pm.test(\"Então comparo o poder entre os herois retornados e salvo o resultado\", function (){\r",
+							"    const person = response_body.find(item => item.skills.power < pm.globals.get(\"POWER_HERO\"));\r",
+							"    pm.globals.set(\"HERO_ID\", person.id);\r",
+							"    pm.globals.set(\"HERO_NAME\", person.name); \r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-access-token",
+						"value": "{{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/heroes",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"heroes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Batalha Ganhadora",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//Um dos problemas encontrados é que se colocar duas variaveis iguais recebendo o mesmo ID para consulta, é retornado a mensagem \"Change the hero\"\r",
+							"//Por isso criei essas duas variaveis diferentes, pois uma vai receber o id do novo heroi e a outra o id do heroi que venceu no caso\r",
+							"pm.environment.set(\"HERO_ID1\", pm.globals.get(\"HERO_ID\"))\r",
+							"pm.environment.set(\"HERO_ID\", pm.globals.get(\"ID_HERO\"))\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Criei uma variavel para armazenar o conteúdo do response para validação posterior\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Verifico que está ok, se o response tem um corpo e se é um Json\r",
+							"pm.test(\"Dado que faço a requisição para a batalha\", function (){\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"    \r",
+							"});\r",
+							"\r",
+							"//Verifico se a API retornou o status 200 e o status OK para prosseguir com a validação\r",
+							"pm.test(\"Quando verifico qual o poder é maior entre o novo heroi e qualquer heroi\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(\"OK\");\r",
+							"});\r",
+							"\r",
+							"//Verifico o resultado retornado com as variaveis globais para realmente saber se está correto esse retorno\r",
+							"pm.test(\"Então verifico o ganhador é o novo heroi e o perdedor é heroi da batalha\", function (){\r",
+							"    pm.expect(response_body.winner == pm.globals.get(\"HERO_NAME\"));\r",
+							"    pm.expect(response_body.loser == pm.globals.get(\"NAME_HERO\"));\r",
+							"\r",
+							"});\r",
+							"\r",
+							"\r",
+							"//***********************************************/\r",
+							"//Cenários Extras:\r",
+							"//***********************************************/\r",
+							"\r",
+							"//Dado que realizo a requisição da batalha dos herois\r",
+							"//Quando não preencho o ID do heroi\r",
+							"//Então exibe uma mensagem informando que o campo está vazio\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição da batalha dos herois\r",
+							"//Quando não preencho o ID do machine heroi\r",
+							"//Então exibe uma mensagem informando que o campo está vazio\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição da batalha dos herois\r",
+							"//Quando preencho o mesmo ID para o Hero e o machine hero\r",
+							"//Então exibe uma mensagem informando para mudar o heroi\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-access-token",
+						"value": "{{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"hero_id\": \"{{HERO_ID1}}\",\r\n    \"machine_hero_id\": \"{{HERO_ID}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/heroes/battle",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"heroes",
+						"battle"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Auth",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Criei uma variavel para armazenar o conteúdo do response para validação posterior\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Verifico que está ok, se o response tem um corpo e se é um Json\r",
+							"pm.test(\"Dado que quero realizar uma autenticação\", function (){\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Verifico se a API retornou o status 200 e o status OK para prosseguir com a validação\r",
+							"pm.test(\"Quando informo um APP-ID válido para autenticação\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(\"OK\");\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Verifico que foi retornado no resultado o valor verdadeiro, pois se não houver a autenticação com sucesso as demais api vão falhar\r",
+							"pm.test(\"Então possuo um token válido para acessar o jogo\", function (){\r",
+							"    pm.expect(response_body.auth).to.eql(true);\r",
+							"    \r",
+							"});\r",
+							"\r",
+							"//O Token foi armazenado em variavel global para ser utilizado dinamicamente em todas as chamadas posteriores a autenticação\r",
+							"pm.globals.set(\"TOKEN_JWT\", response_body.token);\r",
+							"\r",
+							"\r",
+							"//***********************************************/\r",
+							"//Cenários Extras:\r",
+							"//***********************************************/\r",
+							"\r",
+							"//Dado que informo um APP-ID inválido\r",
+							"//Quando executo a chamada da API\r",
+							"//Então a autenticação não é autorizada\r",
+							"\r",
+							"\r",
+							"//Dado que não informo nenhum APP-ID\r",
+							"//Quando executo a chamada da API\r",
+							"//Então a autenticação não é autorizada"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-app-id",
+						"value": "{{APP_ID}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/auth",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Criar Novo Heroi",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//No Body coloquei o nome do novo heroi como randomico para não se repetir durante a execução\r",
+							"\r",
+							"//Foi criada essa função para deixar randomico o preenchimento das habilidades do novo heroi\r",
+							"function randomIntFromInterval(min, max) { // min and max included \r",
+							"  return Math.floor(Math.random() * (max - min + 1) + min)\r",
+							"}\r",
+							"\r",
+							"//Foi criada uma variavel para o Power receber randomicamente os valores entre 150 a 200\r",
+							"pm.environment.set(\"intPower\", randomIntFromInterval(150, 200))\r",
+							"//Foi criada uma variavel para o Velocity receber randomicamente os valores entre 100 a 150\r",
+							"pm.environment.set(\"intVelocity\", randomIntFromInterval(100, 150))\r",
+							"//Foi criada uma variavel para o combat receber randomicamente os valores entre 0 a 100\r",
+							"pm.environment.set(\"intCombat\", randomIntFromInterval(0, 100))\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Criei uma variavel para armazenar o conteúdo do response para validação posterior\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Verifico que está ok, se o response tem um corpo e se é um Json\r",
+							"pm.test(\"Dado que faço a requisição para cadastrar novo heroi\", function (){\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Verifico se algum campo foi gravada a informação null, caso tenha algum campo null vai dar erro\r",
+							"pm.test(\"Quando preencho os campos com dados válidos\", function (){\r",
+							"    pm.expect(response_body.name).not.eq(null);\r",
+							"    pm.expect(response_body.skills.power).not.eq(null);\r",
+							"    pm.expect(response_body.skills.velocity).not.eq(null);\r",
+							"    pm.expect(response_body.skills.combat).not.eq(null);\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Verifico se a API retornou o status 200 e o status OK e se o id criado não está nulo\r",
+							"pm.test(\"Então realizo a criação de um novo Heroi\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(\"OK\");\r",
+							"    pm.expect(response_body.id).not.eq(null);\r",
+							"});\r",
+							"\r",
+							"//As informações como id, nome do novo heroi e o poder do novo heroi foram armazenadas em variavel global para comparar com os outros herois já cadastrados.\r",
+							"pm.globals.set(\"ID_HERO\", response_body.id);\r",
+							"pm.globals.set(\"NAME_HERO\", response_body.name);\r",
+							"pm.globals.set(\"POWER_HERO\", response_body.skills.power);\r",
+							"\r",
+							"\r",
+							"//***********************************************/\r",
+							"//Cenários Extras:\r",
+							"//***********************************************/\r",
+							"\r",
+							"//Dado que realizo a requisição de cadastro do novo heroi\r",
+							"//Quando não preencho o nome do heroi\r",
+							"//Então não permite o cadastro do novo heroi\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição de cadastro do novo heroi\r",
+							"//Quando não preencho nenhuma habilidade do heroi\r",
+							"//Então não permite o cadastro do novo heroi\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição de cadastro do novo heroi\r",
+							"//Quando preencho  todas as habilidade do heroi com valores superior a 200\r",
+							"//Então permite o cadastro do novo heroi, porém as habilidades ficam gravadas com o valor 200\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição de cadastro do novo heroi\r",
+							"//Quando preencho  todas as habilidade do heroi com valores negativo (-10)\r",
+							"//Então permite o cadastro do novo heroi, porém as habilidades ficam gravadas com o valor 0\r",
+							"\r",
+							"\r",
+							"//********************************* */\r",
+							"// Problemas encontrados\r",
+							"//********************************* */\r",
+							"\r",
+							"// 1-) Na documentação da API o campo \"Combate\" está escrito errado, foi necessário alterar o valor para \"Combat\" para realizar um novo cadastro de heroi\r",
+							"// 2-) Ao preencher os campos de habilidades com valores negativo (inferior a 0), está permitindo o cadastro.\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-access-token",
+						"value": "{{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"name\": \"{{$randomFirstName}}\",\r\n   \"skills\": {\r\n            \"power\": 186,\r\n            \"velocity\": {{intVelocity}},\r\n            \"combat\": {{intCombat}}\r\n        }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/heroes",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"heroes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar Heroi",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Criei uma variavel para armazenar o conteúdo do response para validação posterior\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Verifico que está ok, se o response tem um corpo e se é um Json\r",
+							"pm.test(\"Dado que faço a requisição para consultar herois\", function (){\r",
+							"\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"    \r",
+							"});\r",
+							"\r",
+							"//Verifico se a API retornou o status 200 e o status OK para prosseguir com a validação\r",
+							"pm.test(\"Quando realizo a consulta do novo heroi cadastrado\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(\"OK\");    \r",
+							"});\r",
+							"\r",
+							"//Verifico se retornou o nome do novo heroi cadastrado anteriormente nessa chamada de consulta\r",
+							"pm.test(\"Então verifico que o novo heroi foi cadastrado \", function (){\r",
+							"    pm.expect(response_body.find(item => item.name == pm.globals.get(\"NAME_HERO\")));\r",
+							"\r",
+							"});\r",
+							"\r",
+							"//Como o teste não tem critério de quais dados serão utilizados para comparar quem vence ou perde eu acabei escolhendo a habilidade Power como critério de comparação\r",
+							"//Neste caso, verifico qual heroi já cadastrado possui o Power maior que o novo Heroi\r",
+							"//E armazeno em variavel global o id e o nome do heroi com o Power superior ao Novo Heroi\r",
+							"pm.test(\"Então comparo o poder entre os herois retornados e salvo o resultado\", function (){\r",
+							"    const person = response_body.find(item => item.skills.power == pm.globals.get(\"POWER_HERO\"));\r",
+							"    pm.globals.set(\"HERO_ID\", person.id);\r",
+							"    pm.globals.set(\"HERO_NAME\", person.name);\r",
+							"\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-access-token",
+						"value": "{{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/heroes",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"heroes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Batalha Empate",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//Um dos problemas encontrados é que se colocar duas variaveis iguais recebendo o mesmo ID para consulta, é retornado a mensagem \"Change the hero\"\r",
+							"//Por isso criei essas duas variaveis diferentes, pois uma vai receber o id do novo heroi e a outra o id do heroi que venceu no caso\r",
+							"pm.environment.set(\"HERO_ID1\", pm.globals.get(\"HERO_ID\"))\r",
+							"pm.environment.set(\"HERO_ID\", pm.globals.get(\"ID_HERO\"))\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Criei uma variavel para armazenar o conteúdo do response para validação posterior\r",
+							"var response_body = pm.response.json();\r",
+							"\r",
+							"//Verifico que está ok, se o response tem um corpo e se é um Json\r",
+							"pm.test(\"Dado que faço a requisição para a batalha\", function (){\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"    \r",
+							"});\r",
+							"\r",
+							"//Verifico se a API retornou o status 200 e o status OK para prosseguir com a validação\r",
+							"pm.test(\"Quando verifico qual o poder é maior entre o novo heroi e qualquer heroi\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.status(\"OK\");\r",
+							"});\r",
+							"\r",
+							"//Verifico o resultado retornado com as variaveis globais para realmente saber se está correto esse retorno\r",
+							"pm.test(\"Então verifico que houve um empate na batalha\", function (){\r",
+							"    \r",
+							"    //Aqui temos um grande problema, pois o retorno não espera um empate\r",
+							"    //Do jeito que está implementado sempre haverá um ganhador ou um perdedor mesmo o resultado da comparação sendo igual\r",
+							"    console.log(\"Necessita de adequação no retorno da API quando houver empate\")\r",
+							"    \r",
+							"});\r",
+							"\r",
+							"\r",
+							"//***********************************************/\r",
+							"//Cenários Extras:\r",
+							"//***********************************************/\r",
+							"\r",
+							"//Dado que realizo a requisição da batalha dos herois\r",
+							"//Quando não preencho o ID do heroi\r",
+							"//Então exibe uma mensagem informando que o campo está vazio\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição da batalha dos herois\r",
+							"//Quando não preencho o ID do machine heroi\r",
+							"//Então exibe uma mensagem informando que o campo está vazio\r",
+							"\r",
+							"\r",
+							"//Dado que realizo a requisição da batalha dos herois\r",
+							"//Quando preencho o mesmo ID para o Hero e o machine hero\r",
+							"//Então exibe uma mensagem informando para mudar o heroi\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-access-token",
+						"value": "{{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"hero_id\": \"{{HERO_ID1}}\",\r\n    \"machine_hero_id\": \"{{HERO_ID}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/heroes/battle",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"heroes",
+						"battle"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "https://challenge-fielo-qa.herokuapp.com",
+			"type": "string"
+		},
+		{
+			"key": "APP_ID",
+			"value": "MPD4XHcIIGfMA0GCSqGSIbi232QKBgQCh7uxHjWd1CyRgPKiDb3DQEBAQUAA4GNADCB",
+			"type": "string"
+		}
+	]
+}
